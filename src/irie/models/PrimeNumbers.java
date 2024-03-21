@@ -4,7 +4,8 @@ import java.util.Random;
 
 public class PrimeNumbers {
 
-    private int p, g;
+    private final int p;
+    private final int g;
 
     public PrimeNumbers() {
         p = generatePrime();
