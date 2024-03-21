@@ -19,8 +19,10 @@ public class PrimeRoots {
             boolean notPrimeRoot = false;
 
             for (Map.Entry<Integer, Integer> map : primeFactor.entrySet()) {
-                if(BigInteger.valueOf(i).modPow(BigInteger.valueOf(map.getValue()), BigInteger.valueOf(p)).equals(BigInteger.ONE))
+                if (BigInteger.valueOf(i).modPow(BigInteger.valueOf(map.getValue()), BigInteger.valueOf(p)).equals(BigInteger.ONE)) {
                     notPrimeRoot = true;
+                    break;
+                }
             }
             if (!notPrimeRoot) {
                 primeRoot = i;
@@ -59,10 +61,6 @@ public class PrimeRoots {
     }
 
     private static void insertToMap(int i, Map<Integer, Integer> map) {
-        if (map.get(i) != null) {
-            map.put(i, map.get(i) + 1);
-        } else {
-            map.put(i, 1);
-        }
+        map.merge(i, 1, Integer::sum);
     }
 }
