@@ -1,7 +1,7 @@
 package irie.controllers;
 
 import irie.Main;
-import irie.database.SQLStatements;
+import irie.models.SQLStatements;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXPasswordField;
 import com.jfoenix.controls.JFXTextField;

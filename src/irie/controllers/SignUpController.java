@@ -1,6 +1,6 @@
 package irie.controllers;
 
-import irie.database.SQLStatements;
+import irie.models.SQLStatements;
 import com.jfoenix.controls.*;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
