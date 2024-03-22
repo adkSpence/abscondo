@@ -19,8 +19,10 @@ import tray.animations.AnimationType;
 import tray.notification.TrayNotification;
 
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 
 public class HomeController implements Initializable {
@@ -70,25 +72,25 @@ public class HomeController implements Initializable {
     @FXML
     private JFXButton btn_update;
 
-    private TransformEngine transformEngine = new TransformEngine();
+    private final TransformEngine transformEngine = new TransformEngine();
     private byte[] coded_text, secret_key;
-    private int secret_dh;
+    private byte[] secret_dh;
     private String decoded_message;
-    private Image image = new Image("irie/views/assets/encrypted.png");
-    private Image dec_image = new Image("irie/views/assets/decrypted.png");
-    private Image up_image = new Image("irie/views/assets/updated.png");
-    private Image delete_image = new Image("irie/views/assets/deleted.png");
+    private final Image image = new Image("irie/views/assets/encrypted.png");
+    private final Image dec_image = new Image("irie/views/assets/decrypted.png");
+    private final Image up_image = new Image("irie/views/assets/updated.png");
+    private final Image delete_image = new Image("irie/views/assets/deleted.png");
 
-    private DiffieHellman diffieHellman = new DiffieHellman();
-    private int shared_key = diffieHellman.generateSharedSecret();
-    private String shared_secret = String.valueOf(shared_key);
+    private final DiffieHellman diffieHellman = new DiffieHellman();
+    private final int shared_key = diffieHellman.generateSharedSecret();
+    private final byte[] shared_secret = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(shared_key).array();
 
     SignUpController signUpController = new SignUpController();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
-        SQLStatements sqlStatements = new SQLStatements();
+
 
         // Initializing spinner values for secret key on both encryption and decryption tabs
         SpinnerValueFactory<Integer> valueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 99999);
@@ -101,7 +103,7 @@ public class HomeController implements Initializable {
                 " Entry_Title String NOT NULL, \n" +
                 " Secret_Key Blob NOT NULL, \n" +
                 " Encrypted_Message Blob NOT NULL, \n" +
-                " Shared_Secret int NOT NULL);";
+                " Shared_Secret Blob NOT NULL);";
 
         // Creates the Credentials Table
         try{
@@ -130,7 +132,7 @@ public class HomeController implements Initializable {
             coded_text = transformEngine.encryptMessage(shared_secret, ta_plaintext.getText());
             secret_key = transformEngine.encryptMessage(shared_secret, String.valueOf(enc_secret_key.getValue()));
 
-            ta_cipher_text.setText(String.valueOf(coded_text));
+            ta_cipher_text.setText(Arrays.toString(coded_text));
 
             TrayNotification trayNotification = new TrayNotification();
             trayNotification.setMessage("Entry text content and secret key encrypted!");
@@ -152,11 +154,12 @@ public class HomeController implements Initializable {
                 preparedStatement.setString(2, enc_txt_entry.getText().toLowerCase());
                 preparedStatement.setBytes(3, secret_key);
                 preparedStatement.setBytes(4, coded_text);
-                preparedStatement.setInt(5, Integer.valueOf(shared_secret));
+                preparedStatement.setBytes(5, shared_secret);
+                //preparedStatement.setInt(5, Integer.parseInt(shared_secret));
 
                 preparedStatement.executeUpdate();
             }
-            catch (Exception e){ }
+            catch (Exception ignored){ }
         }
 
         else {
@@ -168,6 +171,8 @@ public class HomeController implements Initializable {
             trayNotification.setImage(LoginController.error_image);
             trayNotification.showAndDismiss(Duration.seconds(3));
         }
+
+        reset();
     }
 
     @FXML
@@ -186,16 +191,16 @@ public class HomeController implements Initializable {
                 while (resultSet.next()){
                     coded_text = resultSet.getBytes("Encrypted_Message");
                     secret_key = resultSet.getBytes("Secret_Key");
-                    secret_dh = resultSet.getInt("Shared_Secret");
+                    secret_dh = resultSet.getBytes("Shared_Secret");
 
                 /*
                 Need to decrypt secret key first then
                 convert to integer and compare to see if keys are right before decrypting
                 */
-                    String decoded_key = transformEngine.decryptMessage(String.valueOf(secret_dh), secret_key);
+                    String decoded_key = transformEngine.decryptMessage(secret_dh, secret_key);
 
                     if(Integer.valueOf(decoded_key).equals(dec_secret_key.getValue())){
-                        decoded_message = transformEngine.decryptMessage(String.valueOf(secret_dh), coded_text);
+                        decoded_message = transformEngine.decryptMessage(secret_dh, coded_text);
                         ta_dec_plaintext.setText(decoded_message);
                         cb_allow.setDisable(false);
 
@@ -279,7 +284,7 @@ public class HomeController implements Initializable {
     @FXML
     private void updateEntry() {
         try {
-            coded_text = transformEngine.encryptMessage(String.valueOf(secret_dh), ta_plaintext.getText());
+            coded_text = transformEngine.encryptMessage(secret_dh, ta_plaintext.getText());
             ta_cipher_text.setText(String.valueOf(coded_text));
 
             String query = "UPDATE Entries SET Encrypted_Message = ? WHERE Username = ? AND (Entry_Title = ? AND " +
