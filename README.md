@@ -5,7 +5,7 @@ An application that allows you to encrypt and decrypt confidential information
 
 Ensure you have Java Runtime Environment (JRE) 10 installed on your system. You can download and install it from the following link:
 
-- [Java SE Runtime Environment 10 Downloads]([https://www.oracle.com/java/technologies/javase-jre10-downloads.html](https://www.oracle.com/de/java/technologies/java-archive-javase10-downloads.html))
+- [Java SE Runtime Environment 10 Downloads]([https://www.oracle.com/java/technologies/javase-jre10-downloads.html](https://www.oracle.com/de/java/technologies/java-archive-javase10-downloads.html)
 
 ## Setup Instructions
 1. Install Java (JRE) 10
